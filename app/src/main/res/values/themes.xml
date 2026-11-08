@@ -1,0 +1,13 @@
+<resources>
+    <!--
+      A bare, fullscreen, no-ActionBar theme. All real chrome is drawn in
+      Compose; this theme only governs the window before Compose takes over,
+      so we make it edge-to-edge and translucent to avoid a flash of system UI.
+    -->
+    <style name="Theme.WinDroidNexus" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

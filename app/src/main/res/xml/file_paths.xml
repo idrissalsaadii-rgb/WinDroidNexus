@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grants scoped, revocable URIs into the emulated C:\ tree so that
+     host apps (share sheet, "Open with") can read files produced inside
+     the virtual machine without exposing the whole sandbox. -->
+<paths>
+    <files-path name="drive_c" path="rootfs/drive_c/" />
+    <files-path name="downloads" path="rootfs/drive_c/users/nexus/Downloads/" />
+    <external-files-path name="shared" path="shared/" />
+</paths>
