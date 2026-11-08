@@ -10,7 +10,7 @@ on:
   workflow_dispatch:   # lets you trigger a build by hand from the Actions tab
 
 permissions:
-  contents: read
+  contents: write   # needed to publish the APK as a Release asset
 
 jobs:
   build:
@@ -53,3 +53,35 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      # Publish the APK as a Release asset so it has a direct, installable
+      # download link (artifacts are zipped and awkward to grab on mobile).
+      - name: Publish APK to Release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete debug-latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create debug-latest \
+            app/build/outputs/apk/debug/app-debug.apk \
+            --title "WinDroid Nexus — debug APK" \
+            --notes "Auto-built installable debug APK. On Android, open this page, download the .apk, and allow 'install unknown apps'." \
+            --latest
+
+      # Also drop the APK on an orphan branch so it can be fetched over git.
+      - name: Push APK to build-artifacts branch
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          mkdir -p /tmp/apkout
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/apkout/WinDroidNexus-debug.apk
+          cd /tmp/apkout
+          git init -q
+          git config user.name "windroid-ci"
+          git config user.email "ci@users.noreply.github.com"
+          git checkout -q -b build-artifacts
+          git add WinDroidNexus-debug.apk
+          git commit -q -m "APK build ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" build-artifacts
