@@ -93,7 +93,7 @@ class VfsManager @Inject constructor(
         val match = DRIVE_REGEX.find(normalised)
             ?: throw IOException("Malformed Windows path: $windowsPath")
         val (letterRaw, remainderRaw) = match.destructured
-        val letter = letterRaw.uppercaseChar()
+        val letter = letterRaw.first().uppercaseChar()
         val mountRoot = mounts[letter]
             ?: throw IOException("Drive $letter: is not mounted")
 
