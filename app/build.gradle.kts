@@ -20,9 +20,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // The engine ships for 64-bit ABIs only; 32-bit x86 translation is
-        // delegated to the native runtime (Box86/Box64) the user installs.
-        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        // No ABI filter: the app bundles no native code of its own, so we let
+        // AGP include every ABI its dependencies ship (armeabi-v7a, arm64-v8a,
+        // x86, x86_64). This yields a universal APK that installs on all
+        // devices, including 32-bit ARM. Any x86/Windows translation is still
+        // delegated to the native runtime the user provisions into the engine.
     }
 
     buildTypes {
