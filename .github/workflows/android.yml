@@ -1,8 +1,8 @@
 name: Build APK
 
 # Builds an installable debug APK on GitHub's runners (which have the Android
-# SDK and full network access). The finished app-debug.apk is uploaded as a
-# downloadable artifact on every push and on manual run.
+# SDK preinstalled and full network access). The finished app-debug.apk is
+# uploaded as a downloadable artifact on every push and on manual run.
 on:
   push:
     branches: [ main, master ]
@@ -26,11 +26,19 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install required SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      # Use the SDK preinstalled on the runner instead of a third-party action,
+      # accepting licenses deterministically and installing the exact packages.
+      - name: Accept licenses & install Android SDK packages
+        run: |
+          set -e
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          export ANDROID_HOME="$ANDROID_SDK_ROOT"
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          echo "Using sdkmanager at: $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
